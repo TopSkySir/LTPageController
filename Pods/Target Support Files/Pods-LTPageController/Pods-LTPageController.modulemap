@@ -1,0 +1,6 @@
+framework module Pods_LTPageController {
+  umbrella header "Pods-LTPageController-umbrella.h"
+
+  export *
+  module * { export * }
+}

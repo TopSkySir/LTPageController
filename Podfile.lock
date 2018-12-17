@@ -1,0 +1,20 @@
+PODS:
+  - AnimatedCollectionViewLayout (0.5.0)
+  - SnapKit (4.2.0)
+
+DEPENDENCIES:
+  - AnimatedCollectionViewLayout
+  - SnapKit
+
+SPEC REPOS:
+  https://github.com/CocoaPods/Specs.git:
+    - AnimatedCollectionViewLayout
+    - SnapKit
+
+SPEC CHECKSUMS:
+  AnimatedCollectionViewLayout: 8b660a623d85001f76f00f0d2302a7b043c72bda
+  SnapKit: fe8a619752f3f27075cc9a90244d75c6c3f27e2a
+
+PODFILE CHECKSUM: 57444ab6955ffe9156f94c31864a897764c1f8d9
+
+COCOAPODS: 1.5.0
