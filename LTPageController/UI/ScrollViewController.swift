@@ -41,27 +41,35 @@ class ScrollViewController: UIViewController {
 extension ScrollViewController: LTPageControllerDataSource,LTPageControllerDelegate {
     func contentFrame(_ pageController: LTPageController, contentController: UIViewController, type: LTPageController.ScrollType, status: LTPageController.ScrollStatus, index: Int) -> CGRect {
 
-        if status == .moving {
-            let width = pageController.scrollView.frame.width
-            let height = pageController.scrollView.frame.height
-            let contentOffset = pageController.scrollView.contentOffset
-            let direction = pageController.direction
-            var origin: CGFloat = 0
-            var offset: CGFloat = 0
-            switch direction {
-            case .horizontal:
-                origin = CGFloat(index) * width
-                offset = contentOffset.x - origin
-            case .vertical:
-                origin = CGFloat(index) * height
-                offset = contentOffset.y - origin
-            }
-
-        }
-
         let width = pageController.scrollView.frame.width
         let height = pageController.scrollView.frame.height
-        return CGRect(x: width * CGFloat(index), y: 0, width: width, height: height)
+        let rect = CGRect(x: width * CGFloat(index), y: 0, width: width, height: height)
+        if status == .moving {
+            let contentOffset = pageController.scrollView.contentOffset
+            switch type {
+            case .before:
+                pageController.scrollView.bringSubviewToFront(contentController.view)
+                return rect
+            case .after:
+                pageController.scrollView.sendSubviewToBack(contentController.view)
+                let rect = CGRect(x: contentOffset.x, y: 0, width: width, height: height)
+                return rect
+            case .current:
+                if pageController.type == .before {
+                    pageController.scrollView.sendSubviewToBack(contentController.view)
+                    let rect = CGRect(x: contentOffset.x, y: 0, width: width, height: height)
+                    return rect
+                }
+                else {
+                    pageController.scrollView.bringSubviewToFront(contentController.view)
+                    return rect
+                }
+            }
+        }
+
+        contentController.view.isHidden = false
+        print("起始Frame\(type)： \(rect)")
+        return rect
 //        return CGRect(x: 0, y:  height * CGFloat(index), width: width, height: height)
     }
 

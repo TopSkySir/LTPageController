@@ -32,12 +32,13 @@ class LTPageController: UIViewController {
     var afterController: UIViewController?
     var pageCache = [Int: UIViewController]()
     var cacheSize: UInt = 3
+    var type: ScrollType = .current
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(scrollView)
         scrollView.delegate = self
-        scrollView.isPagingEnabled = false
+        scrollView.isPagingEnabled = true
         scrollView.contentInsetAdjustmentBehavior = .never
     }
 
@@ -125,7 +126,9 @@ extension LTPageController {
         guard let result = vc else {
             return
         }
-        result.view.frame = dataSource?.contentFrame(self, contentController: result, type: type, status: status, index: index) ?? CGRect.zero
+        let rect = dataSource?.contentFrame(self, contentController: result, type: type, status: status, index: index) ?? CGRect.zero
+        print("\(type)===> \(result.view.tag):  \(rect)")
+        result.view.frame = rect
     }
 
 
@@ -170,6 +173,7 @@ extension LTPageController {
             case .vertical:
                 index = Int(floor(lhs/height))
             }
+            type = .before
             loadBeforeController(index)
         } else if lhs > rhs {
             switch direction {
@@ -178,6 +182,7 @@ extension LTPageController {
             case .vertical:
                 index = Int(ceil(lhs/height))
             }
+            type = .after
             loadAfterController(index)
         }
     }
@@ -203,11 +208,16 @@ extension LTPageController {
         }
 
         guard !isLoaded(beforeController, index: index) else{
-            setPageFrame(currentController, type: .current, status: .moving, index: index + 1)
+            let current = loadController(index + 1)
+            current?.view.isHidden = false
+            beforeController?.view.isHidden = false
+            setPageFrame(current, type: .current, status: .moving, index: index + 1)
             setPageFrame(beforeController, type: .before, status: .moving, index: index)
             return
         }
-
+//        if beforeController != nil {
+//            currentController = beforeController
+//        }
         beforeController = loadController(index)
         setPageFrame(beforeController, type: .before, status: .start, index: index)
     }
@@ -224,11 +234,16 @@ extension LTPageController {
         }
 
         guard !isLoaded(afterController, index: index) else{
-            setPageFrame(currentController, type: .current, status: .moving, index: index - 1)
+            let current = loadController(index - 1)
+            current?.view.isHidden = false
+            afterController?.view.isHidden = false
+            setPageFrame(current, type: .current, status: .moving, index: index - 1)
             setPageFrame(afterController, type: .after, status: .moving, index: index)
             return
         }
-
+//        if afterController != nil {
+//            currentController = afterController
+//        }
         afterController = loadController(index)
         setPageFrame(afterController, type: .after, status: .start, index: index)
     }
@@ -319,6 +334,7 @@ extension LTPageController: UIScrollViewDelegate {
         /**
          监测滑动方向
          */
+        print("当前滑动: \(scrollView.contentOffset)")
         updateScrollDirection()
     }
 
@@ -329,13 +345,13 @@ extension LTPageController: UIScrollViewDelegate {
         lastContentOffset = scrollView.contentOffset
     }
 
-    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        print("结束拖拽: \(scrollView.contentOffset)")
-    }
-
-    func scrollViewWillBeginDecelerating(_ scrollView: UIScrollView) {
-        print("开始减速: \(scrollView.contentOffset)")
-    }
+//    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+//        print("结束拖拽: \(scrollView.contentOffset)")
+//    }
+//
+//    func scrollViewWillBeginDecelerating(_ scrollView: UIScrollView) {
+//        print("开始减速: \(scrollView.contentOffset)")
+//    }
 
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         /**
@@ -347,6 +363,12 @@ extension LTPageController: UIScrollViewDelegate {
          清除多余缓存
          */
         cleanCache()
+
+        pageCache.forEach { (item) in
+            if item.key != currentIndex {
+                item.value.view.isHidden = true
+            }
+        }
     }
 
 }
