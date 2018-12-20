@@ -47,7 +47,7 @@ class LTPageController: UIViewController {
         super.viewDidLoad()
         view.addSubview(scrollView)
         scrollView.delegate = self
-        scrollView.isPagingEnabled = false
+        scrollView.isPagingEnabled = true
         scrollView.contentInsetAdjustmentBehavior = .never
     }
 
@@ -74,7 +74,7 @@ extension LTPageController {
 }
 
 
-// MARK: - 加载Controller
+// MARK: - 加载 & 移除
 
 extension LTPageController {
 
@@ -118,30 +118,74 @@ extension LTPageController {
             /**
              从代理获取
              */
-            guard let sourceVC = dataSource?.controller(self, index: index) else {
-                return nil
-            }
-            addChild(sourceVC)
-            setCache(sourceVC, index: index)
-            scrollView.addSubview(sourceVC.view)
+            let sourceVC = dataSource?.controller(self, index: index)
+            setParent(sourceVC, index: index)
             return sourceVC
         }
 
         /**
          添加到ScrollView
          */
-        guard cacheVC.view.superview == nil else {
-            return cacheVC
-        }
-        scrollView.addSubview(cacheVC.view)
+        setSuperView(cacheVC)
         return cacheVC
+    }
+
+    /**
+     添加到Parent
+     */
+    func setParent(_ controller: UIViewController?, index: Int) {
+        guard let sourceVC = controller else {
+            return
+        }
+        addChild(sourceVC)
+        setCache(sourceVC, index: index)
+        setSuperView(sourceVC)
+    }
+
+
+    /**
+     从Parent移除
+     */
+    func removeParent(_ index: Int) {
+        let vc = removeCache(index)
+        removeSuperView(vc)
+        vc?.removeFromParent()
+    }
+
+
+    /**
+     添加到父试图
+     */
+    func setSuperView(_ controller: UIViewController?) {
+        guard let vc = controller, vc.view.superview == nil else {
+            return
+        }
+        scrollView.addSubview(vc.view)
+    }
+
+    /**
+     从父试图移除
+     */
+    func removeSuperView(_ controller: UIViewController?) {
+        guard let view = controller?.view else {
+            return
+        }
+        view.removeFromSuperview()
+    }
+
+    /**
+     从父试图移除
+     */
+    func removeSuperView(_ index: Int) {
+        let vc = getCache(index)
+        removeSuperView(vc)
     }
 
 }
 
 
 
-// MARK: - reload
+// MARK: - Reload刷新
 
 extension LTPageController {
 
@@ -195,8 +239,7 @@ extension LTPageController {
          移除多余的视图，防止重叠
          */
         removeSet.forEach { (index) in
-            let vc = pageCache[index]
-            vc?.view.removeFromSuperview()
+            removeSuperView(index)
         }
 
         /**
@@ -254,7 +297,7 @@ extension LTPageController {
 }
 
 
-// MARK: - Cache
+// MARK: - Cache缓存
 
 extension LTPageController {
 
@@ -288,26 +331,60 @@ extension LTPageController {
      清除缓存
      */
     func cleanCache() {
-        guard pageCache.count > cacheSize else {
+        /**
+         检查缓存数量是否达到Max上限
+         */
+        let pageCount = pageCache.count
+        guard pageCount > cacheSize, pageCount > lastSet.count else {
             return
         }
 
-        var keyArr = pageCache.map { (item) -> Int in
+        /**
+         按照距离currentIndex的距离远近排序
+         距离近的被用到的可能大
+         */
+        var cache = pageCache
+        lastSet.forEach { (index) in
+            cache[index] = nil
+        }
+
+        let size = max(Int(cacheSize) - lastSet.count, 0)
+        let removeSize = cache.count - size
+        let startIndex = cache.count - removeSize
+        let endIndex = cache.count
+
+        /**
+         获取需要移除的队列
+         */
+        let keyArr = cache.map { (item) -> Int in
             return item.key
         }.sorted { (lhs, rhs) -> Bool in
             return abs(lhs - currentIndex) < abs(rhs - currentIndex)
-        }
+        }[startIndex..<endIndex]
 
-        while(keyArr.count > cacheSize) {
-            let key = keyArr.removeLast()
-            let vc = removeCache(key)
-            vc?.view.removeFromSuperview()
-            vc?.removeFromParent()
+
+        /**
+         移除
+         */
+        keyArr.forEach { (index) in
+            removeParent(index)
         }
     }
 
 }
 
+
+// MARK: - 辅助函数
+
+extension LTPageController {
+    func logFrame() {
+        pageCache.sorted { (lhs, rhs) -> Bool in
+            return lhs.key < rhs.key
+        }.forEach { (item) in
+            print("Index: \(item.key), Frame: \(item.value.view.frame)")
+        }
+    }
+}
 
 // MARK: - 滑动代理
 
@@ -324,13 +401,16 @@ extension LTPageController: UIScrollViewDelegate {
 
     }
 
-//    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-//        print("结束拖拽: \(scrollView.contentOffset)")
-//    }
-//
-//    func scrollViewWillBeginDecelerating(_ scrollView: UIScrollView) {
-//        print("开始减速: \(scrollView.contentOffset)")
-//    }
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        /**
+         清除多余缓存
+         */
+        cleanCache()
+    }
+
+    func scrollViewWillBeginDecelerating(_ scrollView: UIScrollView) {
+        print("开始减速: \(scrollView.contentOffset)")
+    }
 
 
     func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
@@ -343,12 +423,6 @@ extension LTPageController: UIScrollViewDelegate {
          清除多余缓存
          */
         cleanCache()
-
-        pageCache.sorted { (lhs, rhs) -> Bool in
-            return lhs.key < rhs.key
-            }.forEach { (item) in
-                print("序列: \(item.key),布局: \(item.value.view.frame)")
-        }
     }
 
 }
