@@ -17,10 +17,13 @@ class ImageViewController: UIViewController {
 
         // Do any additional setup after loading the view.
         imageView.frame = view.bounds
-        imageView.contentMode = .scaleAspectFill
+        imageView.contentMode = .scaleAspectFit
         imageView.clipsToBounds = true
         view.addSubview(imageView)
-        view.clipsToBounds = true
+//        view.clipsToBounds = true
+        view.layer.borderWidth = 3
+        view.backgroundColor = UIColor.white
+        view.layer.borderColor = UIColor.gray.cgColor
     }
     
 

@@ -20,19 +20,41 @@ class LTPageController: UIViewController {
     */
 
     let scrollView = UIScrollView()
+
     weak var delegate: LTPageControllerDelegate?
     weak var dataSource: LTPageControllerDataSource?
 
+    var lastEndOffset: CGPoint = CGPoint.zero
     var lastContentOffset: CGPoint = CGPoint.zero
     var currentIndex: Int = 0
+    var currentSet: Set<Int> = Set(arrayLiteral: 0)
     var direction: ScrollDirection = .horizontal
+
+    var pageCache = [Int: UIViewController]()
+    var cacheSize: UInt = 3
 
     var currentController: UIViewController?
     var beforeController: UIViewController?
     var afterController: UIViewController?
-    var pageCache = [Int: UIViewController]()
-    var cacheSize: UInt = 3
-    var type: ScrollType = .current
+
+//    var type: ScrollType = .current
+//    var contentOffset: CGFloat = 0
+//    var currentPage: UIViewController?
+//    var set: Set = Set(arrayLiteral: 0)
+//    var newIndex: Int = 0
+
+
+    var contentWidth: CGFloat {
+        return scrollView.frame.width
+    }
+
+    var contentHeight: CGFloat {
+        return scrollView.frame.height
+    }
+
+    var numOfPages: Int {
+        return dataSource?.numberOfPages(self) ?? 0
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -173,7 +195,7 @@ extension LTPageController {
             case .vertical:
                 index = Int(floor(lhs/height))
             }
-            type = .before
+//            type = .before
             loadBeforeController(index)
         } else if lhs > rhs {
             switch direction {
@@ -182,7 +204,7 @@ extension LTPageController {
             case .vertical:
                 index = Int(ceil(lhs/height))
             }
-            type = .after
+//            type = .after
             loadAfterController(index)
         }
     }
@@ -248,12 +270,28 @@ extension LTPageController {
         setPageFrame(afterController, type: .after, status: .start, index: index)
     }
 
+
     /**
      加载pageController
      */
+    func loadController(_ controller: UIViewController?, index: Int) -> UIViewController? {
+        guard !isLoaded(controller, index: index) else {
+            return controller
+        }
+        return loadController(index)
+    }
+
+
+    /**
+     加载pageController
+     */
+    @discardableResult
     func loadController(_ index: Int) -> UIViewController? {
         let vc = getCache(index)
         guard vc == nil else {
+            if vc!.view.superview == nil {
+                scrollView.addSubview(vc!.view)
+            }
             return vc
         }
 
@@ -266,6 +304,112 @@ extension LTPageController {
         setCache(result, index: index)
         scrollView.addSubview(result.view)
         return result
+    }
+
+}
+
+extension LTPageController {
+
+    /**
+     刷新布局
+     */
+    func reloadPageFrame(_ controller: UIViewController?, type: ScrollType, index: Int) {
+        guard let result = controller else {
+            return
+        }
+        let rect = dataSource?.frame(self, contentController: result, type: type, index: index) ?? CGRect.zero
+        print("\(type)===> \(result.view.tag):  \(rect)")
+        result.view.frame = rect
+    }
+
+    /**
+     刷新数据
+     */
+    func reloadData() {
+
+        let lastOffset = lastContentOffset.x
+        let offset = scrollView.contentOffset.x
+        let index = offset/contentWidth
+
+        /**
+         获取当前展示的page index
+         */
+        let beforeIndex = Int(floor(index))
+        let safeBeforeIndex = max(0, beforeIndex)
+        let afterIndex = Int(ceil(index))
+        let safeAfterIndex = min(numOfPages, afterIndex)
+
+        let set = Set(arrayLiteral: safeBeforeIndex, safeAfterIndex)
+
+        /**
+         获取需要添加的页面
+         */
+        let appendSet = set.subtracting(currentSet)
+        let removeSet = currentSet.subtracting(set)
+
+        /**
+         获取需要移除的页面
+         */
+        let reloadSet = currentSet.union(set)
+
+        print("需要加载: \(appendSet)")
+        print("需要刷新: \(reloadSet)")
+
+
+        /**
+         标记当前序列
+         */
+        if set.count == 1 {
+            currentIndex = set.first!
+        }
+
+        /**
+         加载page
+         */
+        appendSet.forEach { (index) in
+            loadController(index)
+        }
+
+        removeSet.forEach { (index) in
+            let vc = pageCache[index]
+            vc?.view.removeFromSuperview()
+        }
+
+
+        /**
+         刷新布局
+         */
+        if set.count == 1 {
+            if currentSet.count == 2 {
+                let min = currentSet.min()!
+                let max = currentSet.max()!
+                let index = set.first!
+                let vc = pageCache[index]
+                if index == max {
+                    reloadPageFrame(vc, type: .after, index: index)
+                } else if index == min {
+                    reloadPageFrame(vc, type: .before, index: index)
+                } else {
+                    print("监测到异常")
+                }
+            }
+            currentIndex = set.first!
+        } else if set.count == 2 {
+            let min = set.min()!
+            let max = set.max()!
+            let minVC = pageCache[min]
+            let maxVC = pageCache[max]
+            reloadPageFrame(minVC, type: .before, index: min)
+            reloadPageFrame(maxVC, type: .after, index: max)
+            if !set.contains(currentIndex) {
+                if currentIndex < min {
+                    currentIndex = min
+                } else {
+                    currentIndex = max
+                }
+            }
+        }
+        currentSet = set
     }
 
 }
@@ -314,9 +458,13 @@ extension LTPageController {
         }.sorted { (lhs, rhs) -> Bool in
             return abs(lhs - currentIndex) < abs(rhs - currentIndex)
         }
-
+        print("移除: \(currentIndex)")
         while(keyArr.count > cacheSize) {
+
             let key = keyArr.removeLast()
+            if currentIndex == 6 {
+                print("移除： \(key)")
+            }
             let vc = removeCache(key)
             vc?.view.removeFromSuperview()
             vc?.removeFromParent()
@@ -334,14 +482,20 @@ extension LTPageController: UIScrollViewDelegate {
         /**
          监测滑动方向
          */
-        print("当前滑动: \(scrollView.contentOffset)")
-        updateScrollDirection()
+//        print("当前滑动: \(scrollView.contentOffset)")
+//        updateScrollDirection()
+//        setCurrentIndex()
+        /**
+         刷新数据
+         */
+        reloadData()
     }
 
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         /**
          设置初始contentOffset
          */
+        lastEndOffset = scrollView.contentOffset
         lastContentOffset = scrollView.contentOffset
     }
 
@@ -353,21 +507,22 @@ extension LTPageController: UIScrollViewDelegate {
 //        print("开始减速: \(scrollView.contentOffset)")
 //    }
 
+
+    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
+        print("执行Stop")
+    }
+
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        /**
-         设置当前索引
-         */
-        setCurrentIndex()
 
         /**
          清除多余缓存
          */
         cleanCache()
 
-        pageCache.forEach { (item) in
-            if item.key != currentIndex {
-                item.value.view.isHidden = true
-            }
+        pageCache.sorted { (lhs, rhs) -> Bool in
+            return lhs.key < rhs.key
+            }.forEach { (item) in
+                print("序列: \(item.key),布局: \(item.value.view.frame)")
         }
     }
 

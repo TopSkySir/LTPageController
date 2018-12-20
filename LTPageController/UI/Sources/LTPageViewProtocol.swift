@@ -22,6 +22,8 @@ protocol LTPageControllerDataSource: class {
 
     func contentFrame(_ pageController: LTPageController, contentController: UIViewController, type: LTPageController.ScrollType, status: LTPageController.ScrollStatus, index: Int) -> CGRect
 
+    func frame(_ pageController: LTPageController, contentController: UIViewController, type: LTPageController.ScrollType, index: Int) -> CGRect
+
 //    func frame(_ pageController: LTPageController, status: )
 
 //    func beforeController(_ pageController: LTPageController, currentViewController: UIViewController) -> UIViewController?

@@ -39,6 +39,23 @@ class ScrollViewController: UIViewController {
 }
 
 extension ScrollViewController: LTPageControllerDataSource,LTPageControllerDelegate {
+
+    func frame(_ pageController: LTPageController, contentController: UIViewController, type: LTPageController.ScrollType, index: Int) -> CGRect {
+        let width = pageController.contentWidth
+        let height = pageController.contentHeight
+        let rect = CGRect(x: width * CGFloat(index), y: 0, width: width, height: height)
+        switch type {
+        case .after:
+            let x = pageController.scrollView.contentOffset.x
+            pageController.scrollView.sendSubviewToBack(contentController.view)
+            let rect = CGRect(x: x, y: 0, width: width, height: height)
+            return rect
+        default:
+            pageController.scrollView.bringSubviewToFront(contentController.view)
+            return rect
+        }
+    }
+
     func contentFrame(_ pageController: LTPageController, contentController: UIViewController, type: LTPageController.ScrollType, status: LTPageController.ScrollStatus, index: Int) -> CGRect {
 
         let width = pageController.scrollView.frame.width
@@ -55,30 +72,30 @@ extension ScrollViewController: LTPageControllerDataSource,LTPageControllerDeleg
                 let rect = CGRect(x: contentOffset.x, y: 0, width: width, height: height)
                 return rect
             case .current:
-                if pageController.type == .before {
-                    pageController.scrollView.sendSubviewToBack(contentController.view)
-                    let rect = CGRect(x: contentOffset.x, y: 0, width: width, height: height)
-                    return rect
-                }
-                else {
-                    pageController.scrollView.bringSubviewToFront(contentController.view)
-                    return rect
-                }
+                return rect
+//                if pageController.type == .before {
+//                    pageController.scrollView.sendSubviewToBack(contentController.view)
+//                    let rect = CGRect(x: contentOffset.x, y: 0, width: width, height: height)
+//                    return rect
+//                }
+//                else {
+//                    pageController.scrollView.bringSubviewToFront(contentController.view)
+//                    return rect
+//                }
             }
         }
 
         contentController.view.isHidden = false
         print("起始Frame\(type)： \(rect)")
         return rect
-//        return CGRect(x: 0, y:  height * CGFloat(index), width: width, height: height)
     }
 
     func controller(_ pageController: LTPageController, index: Int) -> UIViewController? {
-        guard index < 7 else {
+        guard index >= 0, index < 7 else {
             return nil
         }
         let vc = ImageViewController()
-        let resultIndex = index % 3 + 1
+        let resultIndex = index + 1
         let imageName = "\(resultIndex).jpg"
         vc.imageView.image = UIImage.init(named: imageName)
         return vc
