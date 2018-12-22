@@ -9,7 +9,7 @@
 Pod::Spec.new do |s|
 
   s.name         = "LTPageController"
-  s.version      = "0.0.2"
+  s.version      = "0.0.3"
   s.summary      = "A Custom PageViewController"
 
 
@@ -25,7 +25,7 @@ Pod::Spec.new do |s|
 
 
   s.author             = { "TopSkySir" => "TopSkyComeOn@163.com" }
-  s.platform     = :ios, '8.0'
+  s.platform     = :ios, '9.0'
 
   s.source       = { :git => "https://github.com/TopSkySir/LTPageController.git", :tag => "#{s.version}" }
   s.swift_version = "4.2"

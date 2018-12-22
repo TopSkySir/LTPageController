@@ -65,7 +65,11 @@ open class LTPageController: UIViewController {
         view.addSubview(scrollView)
         scrollView.delegate = self
         scrollView.isPagingEnabled = true
-        scrollView.contentInsetAdjustmentBehavior = .never
+        if #available(iOS 11.0, *) {
+            scrollView.contentInsetAdjustmentBehavior = .never
+        } else {
+            automaticallyAdjustsScrollViewInsets = false
+        }
         scrollView.frame = view.frame
         setContentSize()
     }
