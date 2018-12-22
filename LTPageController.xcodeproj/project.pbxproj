@@ -169,6 +169,7 @@
 		A6136CB621C119AA002A0323 /* LTPageController */ = {
 			isa = PBXGroup;
 			children = (
+				A616AA0621C6152F000F8520 /* Sources */,
 				A608A72621C262A600C7984C /* Image */,
 				A6136CE521C11AB4002A0323 /* UI */,
 				A6136CB721C119AA002A0323 /* AppDelegate.swift */,
@@ -202,7 +203,6 @@
 		A6136CE521C11AB4002A0323 /* UI */ = {
 			isa = PBXGroup;
 			children = (
-				A616AA0621C6152F000F8520 /* Sources */,
 				A6136CE621C11AC9002A0323 /* BaseTableViewController.swift */,
 				A6136CE721C11AC9002A0323 /* RootViewController.swift */,
 				A608A72421C256D900C7984C /* ScrollViewController.swift */,
