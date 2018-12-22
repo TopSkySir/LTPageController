@@ -9,7 +9,7 @@
 import UIKit
 
 
-class LTPageController: UIViewController {
+open class LTPageController: UIViewController {
 
     /*
     // Only override draw() if you perform custom drawing.
@@ -19,47 +19,59 @@ class LTPageController: UIViewController {
     }
     */
 
-    let scrollView = UIScrollView()
+    open var scrollView = UIScrollView()
 
-    weak var delegate: LTPageControllerDelegate?
-    weak var dataSource: LTPageControllerDataSource?
+    open var animation: LTPageControllerAnimationProtocol.Type? {
+        didSet {
+            animation?.config(self)
+        }
+    }
+    open weak var delegate: LTPageControllerDelegate?
+    open weak var dataSource: LTPageControllerDataSource? {
+        didSet {
+            setController(currentIndex, animated: false)
+        }
+    }
 
-    var currentIndex: Int = 0
-    var lastSet: Set<Int> = Set(arrayLiteral: 0)
-    var direction: ScrollDirection = .horizontal
+    fileprivate(set) var currentIndex: Int = 0
+    fileprivate var lastSet: Set<Int> = Set(arrayLiteral: 0)
 
-    var pageCache = [Int: UIViewController]()
-    var cacheSize: UInt = 3
+    open var direction: ScrollDirection = .horizontal {
+        didSet {
+            setContentSize()
+        }
+    }
 
-    var contentWidth: CGFloat {
+    fileprivate var pageCache = [Int: UIViewController]()
+
+    open var cacheSize: UInt = 3
+
+    open var contentWidth: CGFloat {
         return scrollView.frame.width
     }
 
-    var contentHeight: CGFloat {
+    open var contentHeight: CGFloat {
         return scrollView.frame.height
     }
 
-    var numOfPages: Int {
-        return dataSource?.numberOfPages(self) ?? 0
+    open var numOfPages: Int = 7 {
+        didSet {
+            setContentSize()
+        }
     }
 
-    override func viewDidLoad() {
+    open override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(scrollView)
         scrollView.delegate = self
         scrollView.isPagingEnabled = true
         scrollView.contentInsetAdjustmentBehavior = .never
-    }
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
         scrollView.frame = view.frame
         setContentSize()
-        loadCurrentController()
     }
 }
 
-extension LTPageController {
+public extension LTPageController {
 
     public enum ScrollDirection : Int {
         case horizontal
@@ -70,13 +82,39 @@ extension LTPageController {
         case before
         case after
     }
-
 }
 
 
+// MARK: - 设置当前选中
+
+public extension LTPageController {
+
+    public func setController(_ index: Int, type: ScrollType = .before, animated: Bool) {
+        guard dataSource != nil else {
+            currentIndex = index
+            return
+        }
+
+        guard let vc = loadController(index) else {
+            return
+        }
+
+        guard let frame = animation?.rect(self, contentController: vc, type: type, index: index) else {
+            return
+        }
+
+        if !animated {
+            reloadPageFrame(type: type, index: index)
+        }
+        scrollView.setContentOffset(frame.origin, animated: animated)
+        currentIndex = index
+    }
+
+}
+
 // MARK: - 加载 & 移除
 
-extension LTPageController {
+fileprivate extension LTPageController {
 
     /**
      设置contentSize
@@ -95,6 +133,17 @@ extension LTPageController {
     }
 
     /**
+     设置当前index
+     */
+    func setCurrentIndex(_ index: Int) {
+        guard currentIndex != index else {
+            return
+        }
+        currentIndex = index
+        delegate?.indexChanged(self, index: currentIndex)
+    }
+
+    /**
      加载正在显示的pageController
      */
     func loadCurrentController() {
@@ -109,6 +158,12 @@ extension LTPageController {
      */
     @discardableResult
     func loadController(_ index: Int) -> UIViewController? {
+        /**
+         数组越界检测
+         */
+        guard index >= 0, index < numOfPages else{
+            return nil
+        }
 
         /**
          从cache获取
@@ -187,25 +242,26 @@ extension LTPageController {
 
 // MARK: - Reload刷新
 
-extension LTPageController {
+public extension LTPageController {
 
     /**
      刷新布局
      */
-    func reloadPageFrame(type: ScrollType, index: Int) {
-        guard let result = pageCache[index] else {
+    public func reloadPageFrame(type: ScrollType, index: Int) {
+        guard let result = loadController(index) else {
             return
         }
-        let rect = dataSource?.frame(self, contentController: result, type: type, index: index) ?? CGRect.zero
+        let rect = animation?.rect(self, contentController: result, type: type, index: index) ?? CGRect.zero
         result.view.frame = rect
     }
 
     /**
      刷新数据
      */
-    func reloadData() {
-        let offset = scrollView.contentOffset.x
-        let index = offset/contentWidth
+    public func reloadData() {
+        let isHorizontal = (direction == .horizontal)
+        let offset = isHorizontal ? scrollView.contentOffset.x : scrollView.contentOffset.y
+        let index = offset/(isHorizontal ? contentWidth : contentHeight)
 
         /**
          获取当前展示的page index
@@ -264,7 +320,7 @@ extension LTPageController {
             /**
              设置当前index
              */
-            currentIndex = set.first!
+            setCurrentIndex(set.first!)
 
         } else if set.count == 2 {
 
@@ -285,9 +341,9 @@ extension LTPageController {
              */
             if !set.contains(currentIndex) {
                 if currentIndex < min {
-                    currentIndex = min
+                    setCurrentIndex(min)
                 } else {
-                    currentIndex = max
+                    setCurrentIndex(max)
                 }
             }
         }
@@ -299,12 +355,12 @@ extension LTPageController {
 
 // MARK: - Cache缓存
 
-extension LTPageController {
+public extension LTPageController {
 
     /**
      获取缓存
      */
-    func getCache(_ index: Int) -> UIViewController? {
+    public func getCache(_ index: Int) -> UIViewController? {
         return pageCache[index]
     }
 
@@ -312,7 +368,7 @@ extension LTPageController {
     /**
      缓存
      */
-    func setCache(_ vc: UIViewController?, index: Int) {
+    public func setCache(_ vc: UIViewController?, index: Int) {
         pageCache[index] = vc
     }
 
@@ -321,7 +377,7 @@ extension LTPageController {
      移除
      */
     @discardableResult
-    func removeCache(_ index: Int) -> UIViewController? {
+    public func removeCache(_ index: Int) -> UIViewController? {
         let vc = getCache(index)
         setCache(nil, index: index)
         return vc
@@ -330,7 +386,7 @@ extension LTPageController {
     /**
      清除缓存
      */
-    func cleanCache() {
+    public func cleanCache() {
         /**
          检查缓存数量是否达到Max上限
          */
@@ -376,8 +432,8 @@ extension LTPageController {
 
 // MARK: - 辅助函数
 
-extension LTPageController {
-    func logFrame() {
+public extension LTPageController {
+    public func logFrame() {
         pageCache.sorted { (lhs, rhs) -> Bool in
             return lhs.key < rhs.key
         }.forEach { (item) in
@@ -390,39 +446,25 @@ extension LTPageController {
 
 extension LTPageController: UIScrollViewDelegate {
 
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+    public func scrollViewDidScroll(_ scrollView: UIScrollView) {
         /**
          刷新数据
          */
         reloadData()
     }
 
-    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-
-    }
-
-    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+    public func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         /**
          清除多余缓存
          */
         cleanCache()
     }
 
-    func scrollViewWillBeginDecelerating(_ scrollView: UIScrollView) {
-        print("开始减速: \(scrollView.contentOffset)")
-    }
-
-
-    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
-        print("执行Stop")
-    }
-
-    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+    public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
 
         /**
          清除多余缓存
          */
         cleanCache()
     }
-
 }

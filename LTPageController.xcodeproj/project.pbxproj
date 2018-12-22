@@ -17,6 +17,7 @@
 		A608FF2421C9EF57006586E3 /* 4.jpg in Resources */ = {isa = PBXBuildFile; fileRef = A608FF2021C9EF57006586E3 /* 4.jpg */; };
 		A608FF2521C9EF57006586E3 /* 5.jpg in Resources */ = {isa = PBXBuildFile; fileRef = A608FF2121C9EF57006586E3 /* 5.jpg */; };
 		A608FF2621C9EF57006586E3 /* 7.jpg in Resources */ = {isa = PBXBuildFile; fileRef = A608FF2221C9EF57006586E3 /* 7.jpg */; };
+		A60AB78721CCBE3C00502660 /* LTPageControllerAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60AB78621CCBE3C00502660 /* LTPageControllerAnimation.swift */; };
 		A6136CB821C119AA002A0323 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6136CB721C119AA002A0323 /* AppDelegate.swift */; };
 		A6136CBA21C119AA002A0323 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6136CB921C119AA002A0323 /* ViewController.swift */; };
 		A6136CBD21C119AA002A0323 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A6136CBB21C119AA002A0323 /* Main.storyboard */; };
@@ -65,6 +66,7 @@
 		A608FF2021C9EF57006586E3 /* 4.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = 4.jpg; sourceTree = "<group>"; };
 		A608FF2121C9EF57006586E3 /* 5.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = 5.jpg; sourceTree = "<group>"; };
 		A608FF2221C9EF57006586E3 /* 7.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = 7.jpg; sourceTree = "<group>"; };
+		A60AB78621CCBE3C00502660 /* LTPageControllerAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LTPageControllerAnimation.swift; sourceTree = "<group>"; };
 		A6136CB421C119AA002A0323 /* LTPageController.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LTPageController.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A6136CB721C119AA002A0323 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A6136CB921C119AA002A0323 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -214,6 +216,7 @@
 			children = (
 				A616AA0721C61561000F8520 /* LTPageController.swift */,
 				A616AA0921C615B9000F8520 /* LTPageViewProtocol.swift */,
+				A60AB78621CCBE3C00502660 /* LTPageControllerAnimation.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -453,6 +456,7 @@
 				A6136CBA21C119AA002A0323 /* ViewController.swift in Sources */,
 				A608A72521C256D900C7984C /* ScrollViewController.swift in Sources */,
 				A6136CE921C11AC9002A0323 /* RootViewController.swift in Sources */,
+				A60AB78721CCBE3C00502660 /* LTPageControllerAnimation.swift in Sources */,
 				A616AA0C21C66120000F8520 /* ImageViewController.swift in Sources */,
 				A6136CB821C119AA002A0323 /* AppDelegate.swift in Sources */,
 			);

@@ -12,6 +12,9 @@ import SnapKit
 
 class ScrollViewController: UIViewController {
 
+
+    var isSub: Bool = false
+
     let pageController = LTPageController()
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -24,6 +27,14 @@ class ScrollViewController: UIViewController {
 
         pageController.view.frame = view.bounds
         pageController.dataSource = self
+        pageController.delegate = self
+        pageController.animation = LTPageControllerNormalAnimation.self
+        pageController.scrollView.bounces =  false
+        if isSub {
+            pageController.numOfPages = 7
+        } else {
+            pageController.numOfPages = 2
+        }
     }
 
 
@@ -39,36 +50,40 @@ class ScrollViewController: UIViewController {
 }
 
 extension ScrollViewController: LTPageControllerDataSource,LTPageControllerDelegate {
-
-    func frame(_ pageController: LTPageController, contentController: UIViewController, type: LTPageController.ScrollType, index: Int) -> CGRect {
-        let width = pageController.contentWidth
-        let height = pageController.contentHeight
-        let rect = CGRect(x: width * CGFloat(index), y: 0, width: width, height: height)
-        switch type {
-        case .after:
-            let x = pageController.scrollView.contentOffset.x
-            pageController.scrollView.sendSubviewToBack(contentController.view)
-            let rect = CGRect(x: x, y: 0, width: width, height: height)
-            return rect
-        default:
-            pageController.scrollView.bringSubviewToFront(contentController.view)
-            return rect
-        }
+    func indexChanged(_ pageController: LTPageController, index: Int) {
+        print("当前index: \(index)")
     }
+
 
     func controller(_ pageController: LTPageController, index: Int) -> UIViewController? {
-        guard index >= 0, index < 7 else {
-            return nil
+        if isSub {
+            let vc = ImageViewController()
+            let resultIndex = index + 1
+            let imageName = "\(resultIndex).jpg"
+            vc.imageView.image = UIImage.init(named: imageName)
+            vc.isButton = index == 3
+            vc.button.addTarget(self, action: #selector(onClick(target:)), for: .touchUpInside)
+            return vc
+        } else {
+            let vc = ScrollViewController()
+            vc.isSub = true
+            vc.pageController.scrollView.bounces = false
+            return vc
         }
-        let vc = ImageViewController()
-        let resultIndex = index + 1
-        let imageName = "\(resultIndex).jpg"
-        vc.imageView.image = UIImage.init(named: imageName)
-        return vc
+
+
     }
 
-    func numberOfPages(_ pageController: LTPageController) -> Int {
-        return 7
+    @objc fileprivate func onClick(target: Any) {
+        let index = pageController.currentIndex
+        if pageController.direction == .vertical {
+            pageController.direction = .horizontal
+        } else {
+            pageController.direction = .vertical
+        }
+        pageController.setController(index, animated: false)
+//        pageController.direction = .vertical
+//        pageController.setController(1, animated: true)
     }
 }
 

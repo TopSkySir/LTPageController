@@ -8,18 +8,29 @@
 
 import UIKit
 
-protocol LTPageControllerDelegate: class {
+public protocol LTPageControllerDelegate: class {
+
+    func indexChanged(_ pageController: LTPageController, index: Int)
 
 }
 
-protocol LTPageControllerDataSource: class {
-
-//    func scrollDirection(_ pageController: LTPageController) -> LTPageController.ScrollDirection
-
-    func numberOfPages(_ pageController: LTPageController) -> Int
+public protocol LTPageControllerDataSource: class {
 
     func controller(_ pageController: LTPageController, index: Int) -> UIViewController?
 
-    func frame(_ pageController: LTPageController, contentController: UIViewController, type: LTPageController.ScrollType, index: Int) -> CGRect
+}
+
+public protocol LTPageControllerAnimationProtocol: class {
+
+    static func config(_ pageController: LTPageController)
+
+    static func rect(_ pageController: LTPageController, contentController: UIViewController, type: LTPageController.ScrollType, index: Int) -> CGRect
+}
+
+public extension LTPageControllerAnimationProtocol {
+
+    static func config(_ pageController: LTPageController) {
+
+    }
 
 }

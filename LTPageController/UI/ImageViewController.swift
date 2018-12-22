@@ -11,7 +11,13 @@ import UIKit
 class ImageViewController: UIViewController {
 
     var imageView = UIImageView()
-
+    var button = UIButton()
+    var isButton: Bool = false {
+        didSet {
+            imageView.isHidden = isButton
+            button.isHidden = !isButton
+        }
+    }
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -20,10 +26,16 @@ class ImageViewController: UIViewController {
         imageView.contentMode = .scaleAspectFit
         imageView.clipsToBounds = true
         view.addSubview(imageView)
-//        view.clipsToBounds = true
-        view.layer.borderWidth = 3
         view.backgroundColor = UIColor.white
+        view.clipsToBounds = true
+        view.layer.borderWidth = 3
         view.layer.borderColor = UIColor.gray.cgColor
+
+        button.setTitle("点击", for: .normal)
+        button.setTitleColor(UIColor.red, for: .normal)
+        button.frame = view.bounds
+        view.addSubview(button)
+
     }
     
 
