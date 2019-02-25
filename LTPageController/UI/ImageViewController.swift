@@ -33,6 +33,7 @@ class ImageViewController: UIViewController {
 
         button.setTitle("点击", for: .normal)
         button.setTitleColor(UIColor.red, for: .normal)
+        button.titleLabel?.numberOfLines = 0
         button.frame = view.bounds
         view.addSubview(button)
 

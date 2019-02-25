@@ -23,7 +23,28 @@ class RootViewController: BaseTableViewController {
     }
 
     override func add() {
-        addPushViewcontroller(vcType: ScrollViewController.self, title: "滑动测试")
+        addAction(title: "水平方向测试") { [weak self] in
+            let vc = ScrollViewController()
+            vc.type = 0
+            self?.navigationController?.pushViewController(vc, animated: true)
+        }
+        addAction(title: "垂直方向测试") { [weak self] in
+            let vc = ScrollViewController()
+            vc.type = 1
+            self?.navigationController?.pushViewController(vc, animated: true)
+        }
+
+        addAction(title: "水平层叠测试") { [weak self] in
+            let vc = ScrollViewController()
+            vc.type = 2
+            self?.navigationController?.pushViewController(vc, animated: true)
+        }
+
+        addAction(title: "垂直滑动测试") { [weak self] in
+            let vc = ScrollViewController()
+            vc.type = 3
+            self?.navigationController?.pushViewController(vc, animated: true)
+        }
     }
 
 

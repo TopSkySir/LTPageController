@@ -21,28 +21,13 @@ open class LTPageController: UIViewController {
 
     open var scrollView = UIScrollView()
 
-    open var animation: LTPageControllerAnimationProtocol.Type? {
-        didSet {
-            animation?.config(self)
-        }
-    }
-    open weak var delegate: LTPageControllerDelegate?
-    open weak var dataSource: LTPageControllerDataSource? {
-        didSet {
-            setController(currentIndex, animated: false)
-        }
-    }
-
-    fileprivate(set) var currentIndex: Int = 0
-    fileprivate var lastSet: Set<Int> = Set(arrayLiteral: 0)
-
-    open var direction: ScrollDirection = .horizontal {
-        didSet {
-            setContentSize()
-        }
-    }
-
-    fileprivate var pageCache = [Int: UIViewController]()
+    open fileprivate(set) var animation: LTPageControllerAnimationProtocol.Type?
+    open fileprivate(set) weak var delegate: LTPageControllerDelegate?
+    open fileprivate(set) weak var dataSource: LTPageControllerDataSource?
+    open fileprivate(set) var currentIndex: Int = 0
+    open fileprivate(set) var lastSet: Set<Int> = Set(arrayLiteral: 0)
+    open fileprivate(set) var direction: ScrollDirection = .horizontal
+    open fileprivate(set) var pageCache = [Int: UIViewController]()
 
     open var cacheSize: UInt = 3
 
@@ -54,17 +39,35 @@ open class LTPageController: UIViewController {
         return scrollView.frame.height
     }
 
-    open var numOfPages: Int = 7 {
+    open var numOfPages: Int = 0 {
         didSet {
             setContentSize()
+            setController(currentIndex, animated: false)
         }
+    }
+
+    public required init(delegate: LTPageControllerDelegate, dataSource: LTPageControllerDataSource, animation:  LTPageControllerAnimationProtocol.Type, direction: ScrollDirection) {
+        super.init(nibName: nil, bundle: nil)
+        self.animation = animation
+        self.delegate = delegate
+        self.dataSource = dataSource
+        self.direction = direction
+        animation.config(self)
+    }
+
+    public required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 
     open override func viewDidLoad() {
         super.viewDidLoad()
+        setupScrollView()
+    }
+
+
+    open func setupScrollView() {
         view.addSubview(scrollView)
         scrollView.delegate = self
-        scrollView.isPagingEnabled = true
         if #available(iOS 11.0, *) {
             scrollView.contentInsetAdjustmentBehavior = .never
         } else {
@@ -93,6 +96,9 @@ public extension LTPageController {
 
 public extension LTPageController {
 
+    /**
+     设置当前选中
+     */
     public func setController(_ index: Int, type: ScrollType = .before, animated: Bool) {
         guard dataSource != nil else {
             currentIndex = index
@@ -388,6 +394,13 @@ public extension LTPageController {
     }
 
     /**
+     移除所有缓存
+     */
+    public func removeAllCache(_ index: Int) {
+        pageCache.removeAll()
+    }
+
+    /**
      清除缓存
      */
     public func cleanCache() {
@@ -450,21 +463,21 @@ public extension LTPageController {
 
 extension LTPageController: UIScrollViewDelegate {
 
-    public func scrollViewDidScroll(_ scrollView: UIScrollView) {
+    open func scrollViewDidScroll(_ scrollView: UIScrollView) {
         /**
          刷新数据
          */
         reloadData()
     }
 
-    public func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+    open func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         /**
          清除多余缓存
          */
         cleanCache()
     }
 
-    public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+    open func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
 
         /**
          清除多余缓存

@@ -11,31 +11,39 @@ import SnapKit
 
 
 class ScrollViewController: UIViewController {
-
-
-    var isSub: Bool = false
-
-    let pageController = LTPageController()
+    var type: Int = 0
+    var pageController: LTPageController!
     override func viewDidLoad() {
         super.viewDidLoad()
 
         automaticallyAdjustsScrollViewInsets = false
         extendedLayoutIncludesOpaqueBars = false
-
+        pageController = getPageController()
+        pageController.view.frame = view.bounds
+        pageController.numOfPages = 7
         addChild(pageController)
         view.addSubview(pageController.view)
+    }
 
-        pageController.view.frame = view.bounds
-        pageController.dataSource = self
-        pageController.delegate = self
-        pageController.animation = LTPageControllerNormalAnimation.self
-        pageController.scrollView.bounces =  false
-        if isSub {
-            pageController.numOfPages = 7
-        } else {
-            pageController.numOfPages = 2
+    func getPageController() -> LTPageController {
+        switch type {
+        case 1:
+            let vc = LTPageController(delegate: self, dataSource: self, animation: LTPageControllerNormalAnimation.self, direction: .vertical)
+            return vc
+        case 2:
+            let vc = LTPageController(delegate: self, dataSource: self, animation: LTPageControllerStackAnimation.self, direction: .horizontal)
+            return vc
+        case 3:
+             let vc = LTPageController(delegate: self, dataSource: self, animation: LTPageControllerNormalAnimation.self, direction: .vertical)
+             vc.scrollView.isPagingEnabled = false
+            return vc
+        default:
+            let vc = LTPageController(delegate: self, dataSource: self, animation: LTPageControllerNormalAnimation.self, direction: .horizontal)
+            return vc
         }
     }
+
+
 
 
     /*
@@ -50,40 +58,60 @@ class ScrollViewController: UIViewController {
 }
 
 extension ScrollViewController: LTPageControllerDataSource,LTPageControllerDelegate {
+
     func indexChanged(_ pageController: LTPageController, index: Int) {
         print("当前index: \(index)")
     }
 
 
     func controller(_ pageController: LTPageController, index: Int) -> UIViewController? {
-        if isSub {
-            let vc = ImageViewController()
-            let resultIndex = index + 1
-            let imageName = "\(resultIndex).jpg"
-            vc.imageView.image = UIImage.init(named: imageName)
-            vc.isButton = index == 3
-            vc.button.addTarget(self, action: #selector(onClick(target:)), for: .touchUpInside)
-            return vc
-        } else {
-            let vc = ScrollViewController()
-            vc.isSub = true
-            vc.pageController.scrollView.bounces = false
-            return vc
-        }
-
+        let vc = ImageViewController()
+        let resultIndex = index + 1
+        let imageName = "\(resultIndex).jpg"
+        vc.imageView.image = UIImage.init(named: imageName)
+        vc.isButton = false
+        return vc
+//        if isSimple {
+//            let vc = ImageViewController()
+//            let resultIndex = index + 1
+//            let imageName = "\(resultIndex).jpg"
+//            vc.imageView.image = UIImage.init(named: imageName)
+//            vc.isButton = index == 1
+//            let text = pageController.direction == .horizontal ? "水平" : "垂直"
+//            let other = pageController.direction == .horizontal ? "垂直" : "水平"
+//            vc.button.setTitle("当前滑动方向：\(text)\n点击切换为：\(other)", for: .normal)
+//            vc.button.addTarget(self, action: #selector(onClick(target:)), for: .touchUpInside)
+//            return vc
+//        } else {
+//            if isSub {
+//                let vc = ImageViewController()
+//                let resultIndex = index + 1
+//                let imageName = "\(resultIndex).jpg"
+//                vc.imageView.image = UIImage.init(named: imageName)
+//                vc.isButton = index == 1
+//                let text = pageController.direction == .horizontal ? "水平" : "垂直"
+//                let other = pageController.direction == .horizontal ? "垂直" : "水平"
+//                vc.button.setTitle("当前滑动方向：\(text)\n点击切换为：\(other)", for: .normal)
+//                vc.button.addTarget(self, action: #selector(onClick(target:)), for: .touchUpInside)
+//                return vc
+//            } else {
+//                let vc = ScrollViewController()
+//                vc.isSub = true
+//                vc.pageController.scrollView.bounces = false
+//                return vc
+//            }
+//        }
 
     }
 
-    @objc fileprivate func onClick(target: Any) {
-        let index = pageController.currentIndex
-        if pageController.direction == .vertical {
-            pageController.direction = .horizontal
-        } else {
-            pageController.direction = .vertical
-        }
-        pageController.setController(index, animated: false)
-//        pageController.direction = .vertical
-//        pageController.setController(1, animated: true)
-    }
+//    @objc fileprivate func onClick(target: Any) {
+//        let index = pageController.currentIndex
+//        if pageController.direction == .vertical {
+//            pageController.direction = .horizontal
+//        } else {
+//            pageController.direction = .vertical
+//        }
+//        pageController.setController(index, animated: false)
+//    }
 }
 
