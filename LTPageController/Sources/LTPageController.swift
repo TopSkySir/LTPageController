@@ -21,24 +21,63 @@ open class LTPageController: UIViewController {
 
     open var scrollView = UIScrollView()
 
+    /**
+     动画类型
+     */
     open fileprivate(set) var animation: LTPageControllerAnimationProtocol.Type?
+
+    /**
+     Delegate
+     */
     open fileprivate(set) weak var delegate: LTPageControllerDelegate?
+
+    /**
+     DataSource
+     */
     open fileprivate(set) weak var dataSource: LTPageControllerDataSource?
+
+    /**
+     当前index
+     */
     open fileprivate(set) var currentIndex: Int = 0
+
+    /**
+     上一次位置信息
+     */
     open fileprivate(set) var lastSet: Set<Int> = Set(arrayLiteral: 0)
+
+    /**
+     方向
+     */
     open fileprivate(set) var direction: ScrollDirection = .horizontal
+
+    /**
+     缓存
+     */
     open fileprivate(set) var pageCache = [Int: UIViewController]()
 
+    /**
+     缓存大小
+     */
     open var cacheSize: UInt = 3
 
+    /**
+     scrollView宽度
+     */
     open var contentWidth: CGFloat {
         return scrollView.frame.width
     }
 
+    /**
+     scrollView高度
+     */
     open var contentHeight: CGFloat {
         return scrollView.frame.height
     }
 
+    /**
+     页数
+     */
     open var numOfPages: Int = 0 {
         didSet {
             setContentSize()

@@ -40,6 +40,12 @@ class RootViewController: BaseTableViewController {
             self?.navigationController?.pushViewController(vc, animated: true)
         }
 
+        addAction(title: "垂直层叠测试") { [weak self] in
+            let vc = ScrollViewController()
+            vc.type = 4
+            self?.navigationController?.pushViewController(vc, animated: true)
+        }
+
         addAction(title: "垂直滑动测试") { [weak self] in
             let vc = ScrollViewController()
             vc.type = 3

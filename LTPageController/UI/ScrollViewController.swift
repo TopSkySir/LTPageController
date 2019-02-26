@@ -37,6 +37,9 @@ class ScrollViewController: UIViewController {
              let vc = LTPageController(delegate: self, dataSource: self, animation: LTPageControllerNormalAnimation.self, direction: .vertical)
              vc.scrollView.isPagingEnabled = false
             return vc
+        case 4:
+            let vc = LTPageController(delegate: self, dataSource: self, animation: LTPageControllerStackAnimation.self, direction: .vertical)
+            return vc
         default:
             let vc = LTPageController(delegate: self, dataSource: self, animation: LTPageControllerNormalAnimation.self, direction: .horizontal)
             return vc
