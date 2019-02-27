@@ -435,7 +435,7 @@ public extension LTPageController {
     /**
      移除所有缓存
      */
-    public func removeAllCache(_ index: Int) {
+    public func removeAllCache() {
         pageCache.removeAll()
     }
 
