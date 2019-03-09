@@ -407,6 +407,18 @@ public extension LTPageController {
 public extension LTPageController {
 
     /**
+     重置
+     */
+    public func reset() {
+        currentIndex = 0
+        lastSet = Set(arrayLiteral: 0)
+        for subview in scrollView.subviews {
+            subview.removeFromSuperview()
+        }
+        removeAllCache()
+    }
+
+    /**
      获取缓存
      */
     public func getCache(_ index: Int) -> UIViewController? {
